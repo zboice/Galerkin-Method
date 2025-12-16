@@ -6,7 +6,6 @@ def simpson_int(f, h):
     return h/3*(f[0] + f[-1] + 4*sum(f[1:-1:2]) + 2*sum(f[2:-1:2])) 
 
 class Galerkin:
-    #info on bases is on 514 of Boyd pdf
     def sines(n, a, Xs):
         return np.sin(n*np.pi*Xs/a)
 
@@ -35,7 +34,6 @@ class Galerkin:
             return np.zeros_like(Xs)
         return n*Galerkin.cheb_U(n-1, Xs)
 
-    #outlined on pg 29
     def homogeneous_cheb(n, a, Xs):
         return Galerkin.cheb_T(n, Xs) - Galerkin.cheb_T(n%2, Xs)
         
@@ -50,7 +48,7 @@ class Galerkin:
             self.nstart = 1
             self.bas = Galerkin.sines
             self.bas_der = Galerkin.sine_deriv
-            self.inho = lambda n, t: 1 #np.exp(-10j*t)*inhomogeneous
+            self.inho = lambda n, t: 1
             self.operator = lambda n, m: (c0*self.bas(n, a, self.coord)*self.bas(m, a, self.coord) 
                                       + c1*self.bas(n, a, self.coord)*self.bas_der(m, a, self.coord) 
                                       + c2*self.bas_der(n, a, self.coord)*self.bas_der(m, a, self.coord)
@@ -74,6 +72,14 @@ class Galerkin:
         self.num = max_basis
         self.family = bas_fam
         self.times = times
+
+        '''
+        The cs are coefficients of terms in the weak-form ODE
+        c0: constant term
+        c1: reduced first derivative
+        c2: reduced second derivative
+        c_non_lin: coefficient of any non-linear terms
+        '''
         self.basis_init(inhomogeneous, off, c0, c1, c2, c_non_lin)
 
     def derivs(self, t, c_vec, answer, h, a, N):
@@ -174,17 +180,5 @@ N_MAX = 10
 eqn = Galerkin('homog_cheb', 1, Xs, N_MAX, times)
 eqn.runge_kutta(initial_func)
 func, times = eqn.calc_answer()
-
-plt.plot(Xs, initial_func(Xs), label=r'$u_0(x)$')
-plt.plot(Xs, func[0], label='Numerical Approximation')
-plt.xlabel('x')
-plt.legend()
-plt.show()
-
-plt.imshow(np.real(func))
-plt.xlabel('x')
-plt.ylabel('t')
-plt.colorbar()
-plt.show()
 
 plotAnimated(len(Xs), Xs, times, func, -1, 1)

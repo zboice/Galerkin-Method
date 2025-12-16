@@ -73,6 +73,14 @@ class Galerkin:
         self.num = max_basis
         self.family = bas_fam
         self.times = times
+
+        '''
+        The cs are coefficients of terms in the weak-form ODE
+        c0: constant term
+        c1: reduced first derivative
+        c2: reduced second derivative
+        c_non_lin: coefficient of any non-linear terms
+        '''
         self.basis_init(c0, c1, c2, c_non_lin)
 
     def derivs(self, t, c_vec, h, a, N):
@@ -160,19 +168,12 @@ def schrodinger_harder_test(Xs):
 
 a = 1
 h = 0.3e-2
-ht = 0.0045
+ht = h*1.15
 Xs = np.arange(0, a, h)
 
-times = np.arange(0, 1, ht) # need to watch a CFL-like condition
-N_MAX = 3
-
-eqn1 = Galerkin('sines', Xs, N_MAX, times)
-eqn1.runge_kutta(schrodinger_initial(Xs))
-func1, times = eqn1.calc_answer()
-plotAnimated(len(Xs), Xs, times, func1, -1.5, 1.5)
-
+times = np.arange(0, 1, ht)
 N_MAX = 6
-eqn2 = Galerkin('sines', Xs, N_MAX, times)
-eqn2.runge_kutta(schrodinger_harder_test(Xs))
-func2, times = eqn2.calc_answer()
-plotAnimated(len(Xs), Xs, times, func2, -1.5, 1.5)
+eqn = Galerkin('sines', Xs, N_MAX, times)
+eqn.runge_kutta(schrodinger_harder_test(Xs))
+func, times = eqn.calc_answer()
+plotAnimated(len(Xs), Xs, times, func, -1.5, 1.5)
